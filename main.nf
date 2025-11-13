@@ -59,9 +59,19 @@ process EXTRACT_REGION {
     available=\$((total_threads - 2))
     samtools_threads=\$(( available * 2 / 10 ))
     [ \$samtools_threads -lt 1 ] && samtools_threads=1
-    samtools view -@ \$samtools_threads -b -L ${region_of_interest} ${input_flags} > ${sampleid}.region.bam
-    samtools sort -@ \$samtools_threads -o ${sampleid}.region.sorted.bam ${sampleid}.region.bam
+    
+    # Extract reads from region, filtering for mapped reads with MAPQ >= 1
+    samtools view -@ \$samtools_threads -h -q 1 -F 4 -L ${region_of_interest} ${input_flags} -o ${sampleid}.region.unsorted.bam
+    
+    # Check if BAM has quality scores, if not, calculate them from reference
+    # This ensures DeepVariant has the quality information it needs
+    samtools calmd -@ \$samtools_threads -b ${sampleid}.region.unsorted.bam ${reference} > ${sampleid}.region.withqual.bam
+    
+    samtools sort -@ \$samtools_threads -o ${sampleid}.region.sorted.bam ${sampleid}.region.withqual.bam
     samtools index -@ \$samtools_threads ${sampleid}.region.sorted.bam
+    
+    # Clean up intermediate files
+    rm ${sampleid}.region.unsorted.bam ${sampleid}.region.withqual.bam
     """
 }
 
@@ -133,9 +143,6 @@ process PREDICT_METHYLATION {
     tuple val(sampleid), path("${sampleid}_${chr}_methylation_pred.bed"), emit: pred
     script:
     """
-    # Filter BAM to remove reads with invalid quality scores
-    samtools view -h -q 1 -F 4 ${bam} | samtools view -b -o ${sampleid}_${chr}_filtered.bam -
-    samtools index ${sampleid}_${chr}_filtered.bam
     mkdir -p ${sampleid}_prepdata_${chr}
     nfl prepdata -f -p -c ${chr} ${sampleid}_${chr}_filtered.bam ${reference} ${locifile} ${sampleid}_prepdata_${chr}
     nfl predict /app/NanoFreeLunch.jl-0.28.0/model/${params.nfl_pred_model} ${sampleid}_prepdata_${chr}/forward/Xdata ${sampleid}_${chr}_forward.bed
