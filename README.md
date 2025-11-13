@@ -157,9 +157,6 @@ outdir/
 - Shafin, K., Pesout, T., Chang, PC. et al. Haplotype-aware variant calling with PEPPER-Margin-DeepVariant enables high accuracy in nanopore long-reads. Nat Methods 18, 1322–1332 (2021). [https://doi.org/10.1038/s41592-021-01299-w](https://doi.org/10.1038/s41592-021-01299-w)
 - Zhixing Feng, Chenxi Zhang, Shuo Jin, Jiale Niu, Huijuan Feng, Quantitative detection of DNA methylation from nanopore sequencing data without raw signals, GigaScience, Volume 14, 2025, giaf113, [https://doi.org/10.1093/gigascience/giaf113](https://doi.org/10.1093/gigascience/giaf113)
 
-- **PEPPER-Margin-DeepVariant**: Shafin et al. (2021) Nature Methods
-- **NanoFreeLunch**: [Citation pending - check repository]
-
 ## License
 
 This pipeline is licensed under the **GNU General Public License v3.0** due to its use of GPL-licensed components.
