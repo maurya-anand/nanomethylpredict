@@ -135,8 +135,8 @@ process PREDICT_METHYLATION {
     """
     mkdir -p ${sampleid}_prepdata_${chr}
     nfl prepdata -f -p -c ${chr} ${bam} ${reference} ${locifile} ${sampleid}_prepdata_${chr}
-    nfl predict ${params.nfl_pred_model} ${sampleid}_prepdata_${chr}/forward/Xdata ${sampleid}_${chr}_forward.bed
-    nfl predict ${params.nfl_pred_model} ${sampleid}_prepdata_${chr}/backward/Xdata ${sampleid}_${chr}_backward.bed
+    nfl predict /app/NanoFreeLunch.jl-0.28.0/model/${params.nfl_pred_model} ${sampleid}_prepdata_${chr}/forward/Xdata ${sampleid}_${chr}_forward.bed
+    nfl predict /app/NanoFreeLunch.jl-0.28.0/model/${params.nfl_pred_model} ${sampleid}_prepdata_${chr}/backward/Xdata ${sampleid}_${chr}_backward.bed
     cat ${sampleid}_${chr}_forward.bed ${sampleid}_${chr}_backward.bed | sort -k1,1 -k2,2n > ${sampleid}_${chr}_methylation_pred.bed
     """
 }
