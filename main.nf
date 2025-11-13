@@ -3,13 +3,13 @@
 nextflow.enable.dsl = 2
 
 workflow {
-    input_samples = channel.fromPath(params.input_csv)
+    input_samples = channel.fromPath(params.sample_sheet)
         .splitCsv(header: true)
         .map { row -> tuple(row.sampleid, file(row.cram), file(row.index)) }
 
     reference = file(params.reference)
     reference_fai = file(params.reference_fai)
-    region_of_interest = file(params.region_of_interest)
+    region_of_interest = file(params.regions_bed)
     EXTRACT_REGION(
         input_samples,
         reference,
