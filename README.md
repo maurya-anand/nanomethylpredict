@@ -13,7 +13,7 @@ A Nextflow pipeline for predicting DNA methylation from Oxford Nanopore Technolo
 
 ## Features
 
-- **No methylation calls required** - Works with standard ONT basecalled data (Guppy, Dorado).
+- **No methylation calls required** - Works with standard ONT basecalled data containing base quality values (Guppy, Dorado).
 - **Variant-aware methylation calling** - excludes CpG sites affected by variants.
 
 ## Requirements
