@@ -61,17 +61,27 @@ process EXTRACT_REGION {
     [ \$samtools_threads -lt 1 ] && samtools_threads=1
     
     # Extract reads from region, filtering for mapped reads with MAPQ >= 1
-    samtools view -@ \$samtools_threads -h -q 1 -F 4 -L ${region_of_interest} ${input_flags} -o ${sampleid}.region.unsorted.bam
+    samtools view -@ \$samtools_threads -h -q 1 -F 4 -L ${region_of_interest} ${input_flags} | \\
+    awk '
+    BEGIN {OFS="\t"}
+    /^@/ {print; next}  # Keep header lines
+    {
+        # Check if quality string is missing (column 11 is "*")
+        if (\$11 == "*") {
+            # Skip reads without quality scores
+            next
+        }
+        # Keep reads with valid quality scores
+        print
+    }
+    ' | \\
+    samtools view -@ \$samtools_threads -b -o ${sampleid}.region.unsorted.bam -
     
-    # Check if BAM has quality scores, if not, calculate them from reference
-    # This ensures DeepVariant has the quality information it needs
-    samtools calmd -@ \$samtools_threads -b ${sampleid}.region.unsorted.bam ${reference} > ${sampleid}.region.withqual.bam
-    
-    samtools sort -@ \$samtools_threads -o ${sampleid}.region.sorted.bam ${sampleid}.region.withqual.bam
+    samtools sort -@ \$samtools_threads -o ${sampleid}.region.sorted.bam ${sampleid}.region.unsorted.bam
     samtools index -@ \$samtools_threads ${sampleid}.region.sorted.bam
     
     # Clean up intermediate files
-    rm ${sampleid}.region.unsorted.bam ${sampleid}.region.withqual.bam
+    rm ${sampleid}.region.unsorted.bam
     """
 }
 
@@ -124,11 +134,11 @@ process GET_CG_LOCI {
     tuple val(sampleid), path("${sampleid}.prediction.locifile.tsv"), emit: locifile
     script:
     """
-    awk 'BEGIN{OFS="\t"} /^>/ {if (seq) {gsub("N", "", seq); for (i=1; i<=length(seq)-1; i++) {if (substr(seq, i, 2) == "CG") print chr, i, "5mC", "+"}} chr=substr(\$0, 2); seq=""} /^[^>]/ {seq = seq \$0} END {if (seq) {gsub("N", "", seq); for (i=1; i<=length(seq)-1; i++) {if (substr(seq, i, 2) == "CG") print chr, i, "5mC", "+"}}}' "${reference}" > "${sampleid}.generic.nfl.locifile.tsv"
-    awk 'BEGIN{OFS="\t"} {print \$1, \$2-1, \$2, ".", "0", \$4}' "${sampleid}.generic.nfl.locifile.tsv" > "${sampleid}.generic_cpgs.bed"
-    bcftools view -f PASS ${vcf} | bcftools query -f '%CHROM\t%POS0\t%POS\n' > ${sampleid}.variants.pass.bed
+    awk 'BEGIN{OFS="\\t"} /^>/ {if (seq) {gsub("N", "", seq); for (i=1; i<=length(seq)-1; i++) {if (substr(seq, i, 2) == "CG") print chr, i, "5mC", "+"}} chr=substr(\$0, 2); seq=""} /^[^>]/ {seq = seq \$0} END {if (seq) {gsub("N", "", seq); for (i=1; i<=length(seq)-1; i++) {if (substr(seq, i, 2) == "CG") print chr, i, "5mC", "+"}}}' "${reference}" > "${sampleid}.generic.nfl.locifile.tsv"
+    awk 'BEGIN{OFS="\\t"} {print \$1, \$2-1, \$2, ".", "0", \$4}' "${sampleid}.generic.nfl.locifile.tsv" > "${sampleid}.generic_cpgs.bed"
+    bcftools view -f PASS ${vcf} | bcftools query -f '%CHROM\\t%POS0\\t%POS\\n' > ${sampleid}.variants.pass.bed
     bedtools subtract -a "${sampleid}.generic_cpgs.bed" -b "${sampleid}.variants.pass.bed" > "${sampleid}.sample_specific_cpgs.bed"
-    awk 'BEGIN{OFS="\t"} {print \$1, \$2+1, "5mC", \$6}' "${sampleid}.sample_specific_cpgs.bed" > "${sampleid}.prediction.locifile.tsv"
+    awk 'BEGIN{OFS="\\t"} {print \$1, \$2+1, "5mC", \$6}' "${sampleid}.sample_specific_cpgs.bed" > "${sampleid}.prediction.locifile.tsv"
     """
 }
 
@@ -144,7 +154,7 @@ process PREDICT_METHYLATION {
     script:
     """
     mkdir -p ${sampleid}_prepdata_${chr}
-    nfl prepdata -f -p -c ${chr} ${sampleid}_${chr}_filtered.bam ${reference} ${locifile} ${sampleid}_prepdata_${chr}
+    nfl prepdata -f -p -c ${chr} ${bam} ${reference} ${locifile} ${sampleid}_prepdata_${chr}
     nfl predict /app/NanoFreeLunch.jl-0.28.0/model/${params.nfl_pred_model} ${sampleid}_prepdata_${chr}/forward/Xdata ${sampleid}_${chr}_forward.bed
     nfl predict /app/NanoFreeLunch.jl-0.28.0/model/${params.nfl_pred_model} ${sampleid}_prepdata_${chr}/backward/Xdata ${sampleid}_${chr}_backward.bed
     cat ${sampleid}_${chr}_forward.bed ${sampleid}_${chr}_backward.bed | sort -k1,1 -k2,2n > ${sampleid}_${chr}_methylation_pred.bed
