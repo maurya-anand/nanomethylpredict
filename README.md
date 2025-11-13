@@ -147,12 +147,12 @@ outdir/
 
 ## Components
 
-| Component                                                            | Version        |
-| -------------------------------------------------------------------- | -------------- |
-| [bedtools](https://bedtools.readthedocs.io/)                         | 2.30.0         |
-| [NanoFreeLunch](https://github.com/comprna/NanoFreeLunch.jl)         | 0.28.0         |
-| [PEPPER-Margin-DeepVariant](https://github.com/kishwarshafin/pepper) | r0.8           |
-| [samtools](http://www.htslib.org/)                                   | 1.13           |
+| Component                                                            | Version |
+| -------------------------------------------------------------------- | ------- |
+| [bedtools](https://bedtools.readthedocs.io/)                         | 2.30.0  |
+| [NanoFreeLunch](https://gitee.com/zhixingfeng/NanoFreeLunch.jl)      | 0.28.0  |
+| [PEPPER-Margin-DeepVariant](https://github.com/kishwarshafin/pepper) | r0.8    |
+| [samtools](http://www.htslib.org/)                                   | 1.13    |
 
 ## Refrences
 
