@@ -1,15 +1,15 @@
-# MethylPredict
+# NanoMethylPredict
 
 
 > [!WARNING]
 >
 > This pipeline is under active development. It is not ready for production use.
 
-A Nextflow pipeline for predicting DNA methylation from Oxford Nanopore Technologies (ONT) sequencing data **without requiring native methylation calls**. MethylPredict integrates variant calling with PEPPER-Margin-DeepVariant and methylation prediction using [NanoFreeLunch.jl](https://gitee.com/zhixingfeng/NanoFreeLunch.jl) to get sample-specific methylation predictions from standard ONT basecalled data.
+A Nextflow pipeline for predicting DNA methylation from Oxford Nanopore Technologies (ONT) sequencing data **without requiring native methylation calls**. NanoMethylPredict integrates variant calling with PEPPER-Margin-DeepVariant and methylation prediction using [NanoFreeLunch.jl](https://gitee.com/zhixingfeng/NanoFreeLunch.jl) to get sample-specific methylation predictions from standard ONT basecalled data.
 
 > [!NOTE]
 >
-> **MethylPredict leverages NanoFreeLunch to enable methylation prediction from ONT data that lacks native methylation calls.** This is particularly valuable for:
+> **NanoMethylPredict leverages NanoFreeLunch to enable methylation prediction from ONT data that lacks native methylation calls.** This is particularly valuable for:
 >
 > - **Legacy datasets**: Analyze older ONT data sequenced and basecalled without methylation-aware basecalling.
 > - **Re-analysis**: Extract methylation information from existing BAM/CRAM files without re-basecalling.
